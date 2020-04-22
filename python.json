@@ -1,0 +1,188 @@
+{
+	"form": {
+		"prefix": "formSnip",
+		"body": [
+		  "from django import forms",
+		  "from .models import ${1:example}",
+		  "",
+		  "class ${1:example}Form(forms.ModelForm):",
+		  "",
+		  "    class Meta:",
+		  "        model = ${1:example}",
+		  "        fields = '__all__'"
+		],
+		"description": "form"
+	  },
+	"model": {
+		"prefix": "modelSnip",
+		"body": [
+		  "from django.db import models",
+		  "",
+		  "class ${1:example}(models.Model):",
+		  "    ${2:example} = models.CharField(max_length=${3:example})",
+		  "    ${4:example} = models.TexField()",
+		  "    file = models.FileField(upload_to${5:example})",
+		  "    file = models.DateTi­meField(auto_now)  ",
+		  ""
+		],
+		"description": "model"
+	  },
+	  "views_read": {
+		"prefix": "viewsReadSnip",
+		"body": [
+		  "from django.shortcuts import render, redirect",
+		  "from .models import ${1:example}",
+		  "from .forms import ${2:example}",
+		  "from django.http import HttpResponse",
+		  "",
+		  "def index(request):",
+		  "    ${3:example} = ${1:example}.objects.all()",
+		  "    return render(request, '${4:example}', {'${3:example}': ${3:example}})"
+		],
+		"description": "views_read"
+	  },
+	  "views_create": {
+		"prefix": "viewsCreateSnip",
+		"body": [
+		  "from django.http import HttpResponseRedirect",
+		  "from django.shortcuts import render",
+		  "from .forms import UploadFileForm",
+		  "",
+		  "def upload_file(request):",
+		  "    if request.method == 'POST':",
+		  "        form = UploadFileForm(request.POST, request.FILES)",
+		  "        if form.is_valid():",
+		  "            handle_uploaded_file(request.FILES['file'])",
+		  "            return HttpResponseRedirect('/success/url/')",
+		  "    else:",
+		  "        form = UploadFileForm()",
+		  "    return render(request, 'upload.html', {'form': form})",
+		  ""
+		],
+		"description": "views_create"
+	  },
+	  "template_base": {
+		"prefix": "tempBaseSnip",
+		"body": [
+		  "{% load static %} ",
+		  "<!DOCTYPE html>",
+		  "",
+		  "<html>",
+		  "    <head>",
+		  "        <title>{{docTitle}}</title>",
+		  "        <link rel=\"stylesheet\" type=\"text/css\" href=\"{% static '${1:example}/main.css' %}\">",
+		  "",
+		  "    </head>",
+		  "    <body>",
+		  "        <div id=\"wrapper\">",
+		  "            {% block content %}",
+		  "            {% endblock content %}",
+		  "        </div>",
+		  "                ",
+		  "        <script src=\"{% static '${1:example}/main.js' %}\"></script>",
+		  "    </body>",
+		  "</html>"
+		],
+		"description": "template_base"
+	  },
+	  "template_form": {
+		"prefix": "tempFormSnip",
+		"body": [
+		  "{% load static %} ",
+		  "<!DOCTYPE html>",
+		  "",
+		  "{% extends \"base.html\" %}",
+		  "{% block content %}",
+		  "",
+		  "<form method = 'POST' enctype=\"multipart/form-data\" id=\"word-form\">",
+		  "    <h2>Upload a new word</h2>",
+		  "    {% csrf_token %}",
+		  "    {{ form.as_p }}",
+		  "    <button type=\"submit\" class=\"btn\">Save</button>",
+		  "</form>",
+		  "",
+		  "{% endblock content %}"
+		],
+		"description": "template_form"
+	  },
+	  "template_index": {
+		"prefix": "tempIndexSnip",
+		"body": [
+		  "{% extends \"base.html\" %}",
+		  "{% block content %}",
+		  "",
+		  "<div id=\"jumbo\">",
+		  "    {% for item in stuff %}",
+		  "    <div>",
+		  "        ",
+		  "    </div>   ",
+		  "    {% endfor %}   ",
+		  "</div>",
+		  "",
+		  "{% endblock content %}"
+		],
+		"description": "template_index"
+	  },
+	  "urls_project": {
+		"prefix": "urlsProjSnip",
+		"body": [
+		  "from django.contrib import admin",
+		  "from django.urls import path, include",
+		  "",
+		  "urlpatterns = [",
+		  "    path('admin/', admin.site.urls),",
+		  "    path('', include('blog.urls')),",
+		  "]",
+		  ""
+		],
+		"description": "urls_project"
+	  },
+	  "urls_app": {
+		"prefix": "urlsAppSnip",
+		"body": [
+		  "from django.urls import path",
+		  "from django.conf import settings",
+		  "from django.conf.urls.static import static",
+		  "from . import views",
+		  "",
+		  "urlpatterns = [",
+		  "    path('', views.index, name='index'),",
+		  "    path('delete/<int:item_id>', views.delete_item)",
+		  "]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)",
+		  ""
+		],
+		"description": "urls_app"
+      },
+      "views_update": {
+        "prefix": "viewsUpdateSnip",
+        "body": [
+          "from django.shortcuts import render, redirect",
+          "from django.http import HttpResponse",
+          "from .models import ${1:example}",
+          "from .forms import ${1:example}Create",
+          "",
+          "def update_${2:example}(request, ${2:example}_id):",
+          "    ${2:example}_id = int(${2:example}_id)",
+          "    try:",
+          "        ${2:example}_sel = ${1:example}.objects.get(id = ${2:example}_id)",
+          "    except ${1:example}.DoesNotExist:",
+          "        return redirect('index')",
+          "    ${2:example}_form = ${1:example}Create(request.POST or None, instance = ${2:example}_sel)",
+          "    if ${2:example}_form.is_valid():",
+          "       ${2:example}_form.save()",
+          "       return redirect('index')",
+          "    return render(request, '${2:example}/upload_form.html', {'upload_form':${2:example}_form})"
+        ],
+        "description": "views_update"
+	  },
+	  "register_model": {
+		"prefix": "regModelSnip",
+		"body": [
+		  "from django.contrib import admin",
+		  "from .models import ${1:example}",
+		  "",
+		  "admin.site.register(${1:example})"
+		],
+		"description": "register_model"
+	  }
+}

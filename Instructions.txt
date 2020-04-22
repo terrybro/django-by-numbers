@@ -1,0 +1,281 @@
+1. Install python3 using homebrew
+2. Pip3 comes with python3, use it to install virtualenv - pip3 install virtualenv
+3. cd into working directory
+4. Run virtual environment in current directory - virtualenv -p python3 .
+5. Activate virtual environment - source bin/activate
+6. Install django - pip install django
+7. Create project - django-admin startproject [project name]
+8. cd into project directory
+9. Test it's working - python manage.py runserver
+
+*** A django project folder contains manage.py(a command line utility), database, your starting app directory 
+which has the same name as the project and contains settings and root urls ****
+
+*** A project is a collection of apps, the project app (mysite/mysite) contains configuration and settings for 
+the project - all the work is done in the app you create next ****
+
+10. Create your app - from the root directory - python manage.py startapp [appname]
+11. In your project app - mysite/mysite - open settings.py and add your new app to the list -
+
+INSTALLED_APPS = [
+    'mysite.apps.appNameConfig',
+    # ...
+]
+12. Project app urls.py (mysite/mysite/urls.py) - if you want the app urls.py file to define routes the path 
+should be an empty string and include the file as a second argument
+
+urlpatterns = [   
+    path('', include('appName.urls')),
+]
+13. In the app directory make sure you have the following files - urls, views, models, forms, I have created vscode snippets
+for each file (see python.json) using the following tab commands - 
+formSnip, modelSnip, urlsAppSnip
+
+views has snips for each crud operation - viewsCreateSnip, viewsReadSnip, viewsUpdateSnip, viewsDeleteSnip
+
+You also need a template directory in your app and you avoid conflicts between multiple apps by namespaceing it with
+the following directory structure:
+
+[projectname]/
+├── [projectname]/
+└── [appname/]
+   └── [templates]
+        └──[appname]
+           └──listing.html
+
+So what do these file do?
+
+***** urls.py
+
+In the app urls.py you set a path for each route which contains three arguments - url, a function call
+in views.py and a name for the route which is used for navigation links
+
+urlpatterns = [
+    path('', views.index, name='index'),
+]
+
+you need to import views into urls.py - from . import views
+
+
+**** views.py
+
+******* CREATE *******
+
+from .models import Blog
+from .forms import BlogForm
+
+def index(request):
+    blogs = Blog.objects.all()
+    if request.method == 'POST':
+        form = BlogForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('.')
+    else:
+
+        return render(request, 'blog/index.html', {'blogs': blogs, 'form':form})
+
+and you send the form data to index.html which has the markup .....
+
+<form method = 'POST' enctype="multipart/form-data">
+    <h2>Upload a new blog</h2>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">Save</button>
+</form>
+
+form.as_p formats fields into paragraphs - there are other options
+
+******* READ *******
+
+You define functions that run when the corresponding route calls it. To create a blog listing page -
+
+from .models import Blog
+
+def index(request):
+            blogs = Blog.objects.all()
+            return render(request, 'blog/index.html', {'blogs': blogs})
+
+Here you imported the Blog model - a table in the database - assign the results of the query to the variable 
+blogs and render the results by sending the html template and data as arguments. The templating language
+accesses the data through the name string you assigned - in this case 'blogs'
+
+{% for blog in blogs %}
+        <div>
+            <h1>{{blog.title}}</h1>
+            <p>{{item.content}}</p>
+        </div>   
+{% endfor %}
+
+******* UPDATE *******
+
+from .models import Blog
+from .forms import BlogCreate
+
+def update_blog(request, blog_id):
+    blog_id = int(blog_id)
+    try:
+        blog_sel = Blog.objects.get(id = blog_id)
+    except Blog.DoesNotExist:
+        return redirect('index')
+    blog_form = BlogCreate(request.POST or None, instance = blog_sel)
+    if blog_form.is_valid():
+       blog_form.save()
+       return redirect('index')
+    return render(request, 'blog/upload_form.html', {'upload_form':blog_form})
+
+******* DELETE *******
+
+def delete_blog(request, blog_id):
+    blog_id = int(blog_id)
+    try:
+        blog_sel = Blog.objects.get(id = blog_id)
+    except Blog.DoesNotExist:
+        return redirect('index')
+    blog_sel.delete()
+    return redirect('index')
+
+These are the routes in app urls.py for crud operations ...
+
+urlpatterns = [
+    path('', views.index, name = 'index'),
+    path('upload/', views.upload, name = 'upload-book'),
+    path('update/<int:book_id>', views.update_book),
+    path('delete/<int:book_id>', views.delete_book)
+]
+
+**** models.py
+
+In models.py you create a class which corresponds to a database table
+
+class Blog(models.Model):
+    title = models.CharField(max_length=60)
+    content = models.CharField(max_length=200)
+    docfile = models.FileField()
+
+You need to register all your models in app.admin .....
+
+from django.contrib import admin
+from .models import example
+
+admin.site.register(example)
+
+Once all your models are registered you need to create the tables in the database - in terminal ....
+
+python manage.py makemigrations
+python manage.py migrate
+
+The tables corresponding to your models are now in your database, you can add entries by using
+the web interface built into django - the address is localhost:8000/admin, to login you need to
+create a superuser ....
+
+pyhon manage.py createsuperuser
+
+log in and add entries to models
+
+**** forms.py
+
+When you use a form to add a new entry to your database you can bind it to your model,
+the template can then render the form with the correct fields
+
+from .models import Blog
+
+class BlogCreate(forms.ModelForm):
+    class Meta:
+        model = Blog
+        fields = '__all__'
+
+so add_blog.html template has the following markup
+
+<form method = 'POST' enctype="multipart/form-data" id="blog-form">
+    <h2>Upload a new blog</h2>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">Save</button>
+</form>
+
+'form' has been passed to the template by the render call in views which had imported the
+BlogCreate from forms.py -
+
+return render(request, 'blog/add_blog.html', {'form':BlogCreate})
+
+
+****** Static/Media Files ******
+
+Media files usually means files uploaded by the user
+
+static files are stored in myproject/myapp/static/myapp/subdirectory/[filename]
+
+media files are usually stored in myproject/media/subdirectory/[filename]
+
+In myproject/myproject/settings.py you set the directories ...
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static-files')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT=os.path.join(BASE_DIR, 'media')
+
+When you deploy you run a command to collect all static files and copy them into a designated folder.
+In the terminal ...
+
+python manage.py collectstatic
+
+***** Templates and static files *****
+It's usual to have a base.html template file and you inject section templates into it using following 
+markup, in base.html you link to css
+
+base.html ...
+
+{% load static %} 
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>My Proj</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'blog/main.css' %}">
+
+    </head>
+    <body>
+        
+        <div id="wrapper">
+            {% block content %}
+            {% endblock content %}
+        </div>
+                
+        <script src="{% static 'blog/main.js' %}"></script>
+    </body>
+</html>
+
+index.html .....
+
+{% extends "base.html" %}
+{% block content %}
+
+<div id="jumbo">
+    {% for item in items %}
+    <div>
+        
+    </div>   
+    {% endfor %}   
+</div>
+
+{% endblock content %}
+
+***** Deploy to pythonanywhere *****
+
+login to pythonanywhere.com
+
+1.In dashboard open up a new bash console
+2. git clone [your repo]
+3. cd into project
+4. mkvirtualenv --python=/usr/bin/python3.8 [appName+'env']
+5. pip install django
+6. In new browser window go to dashboard and click on web - top menu and add app
+7. Select manual configuration - not Django
+8. Paste full path to project into Source code and Working directory
+9. Enter name of virtual env
+10. Edit wsgi.py - uncomment and delete everything apart from django section, then
+change path and change settings
+11. Add static path
+

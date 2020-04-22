@@ -1,0 +1,64 @@
+{
+	"template_base": {
+		"prefix": "tempBaseSnip",
+		"body": [
+		  "{% load static %} ",
+		  "<!DOCTYPE html>",
+		  "",
+		  "<html>",
+		  "    <head>",
+		  "        <title>{{docTitle}}</title>",
+		  "        <link rel=\"stylesheet\" type=\"text/css\" href=\"{% static '${1:example}/main.css' %}\">",
+		  "",
+		  "    </head>",
+		  "    <body>",
+		  "        <div id=\"wrapper\">",
+		  "            {% block content %}",
+		  "            {% endblock content %}",
+		  "        </div>",
+		  "                ",
+		  "        <script src=\"{% static '${1:example}/main.js' %}\"></script>",
+		  "    </body>",
+		  "</html>"
+		],
+		"description": "template_base"
+	  },
+	  "template_form": {
+		"prefix": "tempFormSnip",
+		"body": [
+		  "{% load static %} ",
+		  "<!DOCTYPE html>",
+		  "",
+		  "{% extends \"base.html\" %}",
+		  "{% block content %}",
+		  "",
+		  "<form method = 'POST' enctype=\"multipart/form-data\" id=\"word-form\">",
+		  "    <h2>Upload a new word</h2>",
+		  "    {% csrf_token %}",
+		  "    {{ form.as_p }}",
+		  "    <button type=\"submit\" class=\"btn\">Save</button>",
+		  "</form>",
+		  "",
+		  "{% endblock content %}"
+		],
+		"description": "template_form"
+	  },
+	  "template_index": {
+		"prefix": "tempIndexSnip",
+		"body": [
+		  "{% extends \"base.html\" %}",
+		  "{% block content %}",
+		  "",
+		  "<div id=\"jumbo\">",
+		  "    {% for item in stuff %}",
+		  "    <div>",
+		  "        ",
+		  "    </div>   ",
+		  "    {% endfor %}   ",
+		  "</div>",
+		  "",
+		  "{% endblock content %}"
+		],
+		"description": "template_index"
+	  }
+}
